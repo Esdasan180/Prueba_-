@@ -7,18 +7,18 @@
 </head>
 <body>
     <h1>Gráficos Interactivos (Plotly.js)</h1>
-    <div id="torta" style="width: 45%; display: inline-block;"></div>
-    <div id="barras" style="width: 45%; display: inline-block;"></div>
+    <div id="torta" style="width: 45%; display: inline-block; height: 400px;"></div>
+    <div id="barras" style="width: 45%; display: inline-block; height: 400px;"></div>
 
     <script>
         // Datos simulados
         const data = [
-            {{ categoria: "A", subgrupo: "X", valor: 10 }},
-            {{ categoria: "A", subgrupo: "Y", valor: 20 }},
-            {{ categoria: "B", subgrupo: "X", valor: 30 }},
-            {{ categoria: "B", subgrupo: "Y", valor: 10 }},
-            {{ categoria: "C", subgrupo: "X", valor: 15 }},
-            {{ categoria: "C", subgrupo: "Y", valor: 25 }},
+            { categoria: "A", subgrupo: "X", valor: 10 },
+            { categoria: "A", subgrupo: "Y", valor: 20 },
+            { categoria: "B", subgrupo: "X", valor: 30 },
+            { categoria: "B", subgrupo: "Y", valor: 10 },
+            { categoria: "C", subgrupo: "X", valor: 15 },
+            { categoria: "C", subgrupo: "Y", valor: 25 }
         ];
 
         // Sumar por categoría para el gráfico de torta

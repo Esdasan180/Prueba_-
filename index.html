@@ -1,23 +1,73 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Interactivo</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        iframe { border: none; margin-bottom: 40px; }
-    </style>
+    <title>Gráficos Interactivos</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Dashboard Interactivo</h1>
+    <h1>Gráficos Interactivos (Plotly.js)</h1>
+    <div id="torta" style="width: 45%; display: inline-block;"></div>
+    <div id="barras" style="width: 45%; display: inline-block;"></div>
 
-    <h2>Gráfico de Torta</h2>
-    <iframe src="grafico_torta.html" width="100%" height="500"></iframe>
+    <script>
+        // Datos simulados
+        const data = [
+            {{ categoria: "A", subgrupo: "X", valor: 10 }},
+            {{ categoria: "A", subgrupo: "Y", valor: 20 }},
+            {{ categoria: "B", subgrupo: "X", valor: 30 }},
+            {{ categoria: "B", subgrupo: "Y", valor: 10 }},
+            {{ categoria: "C", subgrupo: "X", valor: 15 }},
+            {{ categoria: "C", subgrupo: "Y", valor: 25 }},
+        ];
 
-    <h2>Gráfico de Líneas</h2>
-    <iframe src="grafico_lineas.html" width="100%" height="500"></iframe>
+        // Sumar por categoría para el gráfico de torta
+        function getSumaPorCategoria() {
+            const resumen = {};
+            data.forEach(d => {
+                if (!resumen[d.categoria]) resumen[d.categoria] = 0;
+                resumen[d.categoria] += d.valor;
+            });
+            return {
+                labels: Object.keys(resumen),
+                values: Object.values(resumen)
+            };
+        }
 
-    <h2>Gráfico de Barras</h2>
-    <iframe src="grafico_barras.html" width="100%" height="500"></iframe>
+        // Filtrar por categoría para mostrar subgrupos
+        function getDatosPorCategoria(categoria) {
+            return data.filter(d => d.categoria === categoria);
+        }
+
+        // Gráfico de torta inicial
+        const tortaDatos = getSumaPorCategoria();
+        const torta = {
+            labels: tortaDatos.labels,
+            values: tortaDatos.values,
+            type: 'pie'
+        };
+
+        Plotly.newPlot('torta', [torta], { title: 'Distribución por Categoría' });
+
+        // Gráfico de barras vacío
+        Plotly.newPlot('barras', [], { title: 'Subgrupos por Categoría Seleccionada' });
+
+        // Evento de clic en gráfico de torta
+        const tortaDiv = document.getElementById('torta');
+        tortaDiv.on('plotly_click', function(dataClick) {
+            const categoriaSeleccionada = dataClick.points[0].label;
+            const filtrado = getDatosPorCategoria(categoriaSeleccionada);
+
+            const barras = {
+                x: filtrado.map(d => d.subgrupo),
+                y: filtrado.map(d => d.valor),
+                type: 'bar'
+            };
+
+            Plotly.react('barras', [barras], {
+                title: 'Subgrupos de ' + categoriaSeleccionada
+            });
+        });
+    </script>
 </body>
 </html>

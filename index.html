@@ -7,11 +7,11 @@
 </head>
 <body>
     <h1>Gráficos Interactivos (Plotly.js)</h1>
+    <button id="reset">Mostrar todos los subgrupos</button>
     <div id="torta" style="width: 45%; display: inline-block; height: 400px;"></div>
     <div id="barras" style="width: 45%; display: inline-block; height: 400px;"></div>
 
     <script>
-        // Datos simulados
         const data = [
             { categoria: "A", subgrupo: "X", valor: 10 },
             { categoria: "A", subgrupo: "Y", valor: 20 },
@@ -21,7 +21,9 @@
             { categoria: "C", subgrupo: "Y", valor: 25 }
         ];
 
-        // Sumar por categoría para el gráfico de torta
+        // Variable para guardar la categoría actualmente seleccionada
+        let seleccionActual = null;
+
         function getSumaPorCategoria() {
             const resumen = {};
             data.forEach(d => {
@@ -34,41 +36,69 @@
             };
         }
 
-        // Filtrar por categoría para mostrar subgrupos
         function getDatosPorCategoria(categoria) {
             return data.filter(d => d.categoria === categoria);
         }
 
-        // Gráfico de torta inicial
-        const tortaDatos = getSumaPorCategoria();
-        const torta = {
-            labels: tortaDatos.labels,
-            values: tortaDatos.values,
-            type: 'pie'
-        };
+        function getTodosLosSubgrupos() {
+            return data;
+        }
 
-        Plotly.newPlot('torta', [torta], { title: 'Distribución por Categoría' });
+        function actualizarTorta(categoriaSeleccionada = null) {
+            const tortaDatos = getSumaPorCategoria();
+            const pull = tortaDatos.labels.map(label => {
+                return (label === categoriaSeleccionada) ? 0.1 : 0;
+            });
 
-        // Gráfico de barras vacío
-        Plotly.newPlot('barras', [], { title: 'Subgrupos por Categoría Seleccionada' });
+            const torta = {
+                labels: tortaDatos.labels,
+                values: tortaDatos.values,
+                type: 'pie',
+                pull: pull
+            };
 
-        // Evento de clic en gráfico de torta
-        const tortaDiv = document.getElementById('torta');
-        tortaDiv.on('plotly_click', function(dataClick) {
-            const categoriaSeleccionada = dataClick.points[0].label;
-            const filtrado = getDatosPorCategoria(categoriaSeleccionada);
+            Plotly.react('torta', [torta], { title: 'Distribución por Categoría' });
+        }
 
+        function actualizarBarras(filtrado, titulo) {
             const barras = {
-                x: filtrado.map(d => d.subgrupo),
+                x: filtrado.map(d => d.categoria + ' - ' + d.subgrupo),
                 y: filtrado.map(d => d.valor),
                 type: 'bar'
             };
 
-            Plotly.react('barras', [barras], {
-                title: 'Subgrupos de ' + categoriaSeleccionada
-            });
+            Plotly.react('barras', [barras], { title: titulo });
+        }
+
+        // Mostrar gráficos iniciales
+        actualizarTorta(); // sin selección
+        actualizarBarras(getTodosLosSubgrupos(), 'Todos los Subgrupos (sin filtro)');
+
+        // Evento al hacer clic en la torta
+        const tortaDiv = document.getElementById('torta');
+        tortaDiv.on('plotly_click', function(dataClick) {
+            const categoriaSeleccionada = dataClick.points[0].label;
+
+            if (seleccionActual === categoriaSeleccionada) {
+                // Si ya estaba seleccionada, deseleccionar
+                seleccionActual = null;
+                actualizarTorta();
+                actualizarBarras(getTodosLosSubgrupos(), 'Todos los Subgrupos (sin filtro)');
+            } else {
+                // Seleccionar nueva categoría
+                seleccionActual = categoriaSeleccionada;
+                const filtrado = getDatosPorCategoria(categoriaSeleccionada);
+                actualizarTorta(seleccionActual);
+                actualizarBarras(filtrado, 'Subgrupos de ' + categoriaSeleccionada);
+            }
+        });
+
+        // Botón para reiniciar todo
+        document.getElementById('reset').addEventListener('click', function() {
+            seleccionActual = null;
+            actualizarTorta();
+            actualizarBarras(getTodosLosSubgrupos(), 'Todos los Subgrupos (sin filtro)');
         });
     </script>
 </body>
 </html>
-
